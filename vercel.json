@@ -1,5 +1,5 @@
 {
-  "buildCommand": "vite build && esbuild api/boot.ts --platform=node --bundle --format=esm --outdir=dist --alias:@contracts=./contracts --alias:@db=./db --alias:@=./src --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\"",
+  "buildCommand": "vite build && esbuild server/boot.ts --platform=node --bundle --format=esm --outdir=dist --alias:@contracts=./contracts --alias:@db=./db --alias:@=./src --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\"",
   "outputDirectory": "dist/public",
   "installCommand": "npm install",
   "framework": null,
