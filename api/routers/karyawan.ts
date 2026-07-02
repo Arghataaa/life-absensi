@@ -18,15 +18,8 @@ export const karyawanRouter = createRouter({
       const db = await getDb();
       const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
       const joinDate = new Date().toISOString().split("T")[0];
-/// ── HAPUS KOLOM ID DAN NILAI NULL AGAR AUTO-INCREMENT DATABASE JALAN ALAMI ──────────────────────
-      await db.execute(
-        `INSERT INTO karyawan_cloud 
-         (nip, nama_lengkap, divisi, user_id, employee_id, department, position, phone, join_date, face_photo) 
-         VALUES 
-         ('${input.nip}', '${input.namaLengkap}', '${input.divisi}', 0, '${input.nip}', '${input.divisi}', 'Karyawan', '-', '${new Date().toISOString().split('T')[0]}', '${targetPath}')`
-      );
 
-      // ── LOGIKA PENYIMPANAN FOTO ────────────────────────────────────
+      // ── 1. LOGIKA PENYIMPANAN FOTO DIJALANKAN DULUAN ───────────────────
       if (input.images && input.images.length > 0) {
         const dirPath = path.join(process.cwd(), "public", "uploads", "karyawan", input.nip);
         if (!fs.existsSync(dirPath)) {
@@ -39,6 +32,21 @@ export const karyawanRouter = createRouter({
           fs.writeFileSync(filePath, buffer);
         });
       }
+
+      // ── 2. EKSEKUSI QUERY DATABASE MENGGUNAKAN DRIZZLE AMAN ──────────────
+      // Kita pakai db.insert murni bawaan skema biar auto-increment ID-nya dikelola cloud secara alami
+      await db.insert(karyawan).values({
+        nip: input.nip,
+        namaLengkap: input.namaLengkap,
+        divisi: input.divisi,
+        userId: 0,
+        employeeId: input.nip,
+        department: input.divisi,
+        position: "Karyawan",
+        phone: "-",
+        joinDate: joinDate,
+        facePhoto: targetPath,
+      }).execute();
 
       return { success: true, message: "Berhasil menyimpan karyawan dan foto" };
     }),
@@ -67,7 +75,7 @@ export const karyawanRouter = createRouter({
 
   list: publicQuery
     .input(z.object({ search: z.string().optional() }).optional())
-    .query(async ({ input }) => {
+    .query(async () => {
       const db = await getDb();
       const data = db.select().from(karyawan);
       return (await data.execute()).map((item: any) => ({
