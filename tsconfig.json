@@ -10,19 +10,5 @@
     {
       "path": "./tsconfig.server.json"
     }
-  ],
-  "compilerOptions": {
-    //"baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@contracts/*": [
-        "./contracts/*"
-      ],
-      "@db/*": [
-        "./db/*"
-      ]
-    }
-  }
+  ]
 }
