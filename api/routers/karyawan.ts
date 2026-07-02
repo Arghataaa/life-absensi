@@ -19,12 +19,14 @@ export const karyawanRouter = createRouter({
       const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
 
       // ── AMANKAN QUERY INSERT UNTUK MYSQL CLOUD ──────────────────────
-     // ── AMANKAN QUERY INSERT UNTUK MYSQL CLOUD ──────────────────────
+    // ── AMANKAN QUERY INSERT DENGAN URUTAN YANG BENAR ──────────────────────
       await db.insert(karyawan).values({
         nip: input.nip,
         namaLengkap: input.namaLengkap,
         divisi: input.divisi,
-        userId: 0,
+        userId: 0,                           // 👈 Angka 0 wajib dipasang di userId!
+        employeeId: input.nip,               // 👈 Teks string NIP dimasukkan ke employeeId
+        department: input.divisi,            // 👈 Teks string divisi dimasukkan ke department
         position: "Karyawan",
         phone: "-", 
         joinDate: new Date().toISOString().split('T')[0], 
