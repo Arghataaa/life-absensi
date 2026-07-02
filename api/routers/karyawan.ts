@@ -19,21 +19,15 @@ export const karyawanRouter = createRouter({
       const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
 
       // ── AMANKAN QUERY INSERT UNTUK MYSQL CLOUD ──────────────────────
-     // ── AMANKAN QUERY INSERT DENGAN STRING VALID UNTUK MYSQL CLOUD ──────────────────────
-      // ── AMANKAN QUERY INSERT UNTUK MYSQL CLOUD ──────────────────────
-      // ── AMANKAN QUERY INSERT DENGAN STRING VALID UNTUK MYSQL CLOUD ──────────────────────
+     // ── AMANKAN QUERY INSERT UNTUK MYSQL CLOUD ──────────────────────
       await db.insert(karyawan).values({
-        id: Math.floor(Math.random() * 1000000), // 👈 TAMBAHKAN BARIS INI BANG!
         nip: input.nip,
         namaLengkap: input.namaLengkap,
         divisi: input.divisi,
         userId: 0,
-        // ... sisa kode di bawahnya tetap sama
-        employeeId: input.nip,
-        department: input.divisi,
         position: "Karyawan",
-        phone: "-", // 👈 Tetap pakai tanda strip agar tidak kosong
-        joinDate: new Date().toISOString().split('T')[0], // 👈 MENGHASILKAN "2026-07-02" (Format string murni yang valid untuk database)
+        phone: "-", 
+        joinDate: new Date().toISOString().split('T')[0], 
         facePhoto: targetPath,
       }).execute();
 
