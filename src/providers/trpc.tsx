@@ -19,9 +19,9 @@ const queryClient = new QueryClient({
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      headers() {
+      url: "https://life-absensi-production.up.railway.app/api/trpc",
+      // transformer: superjson,
+      headers()  {
         const token = localStorage.getItem("local_auth_token");
         return {
           ...(token ? { "x-local-auth-token": token } : {}),
