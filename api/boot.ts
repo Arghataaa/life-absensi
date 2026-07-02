@@ -54,7 +54,8 @@ app.get("/api/sse/attendance", async (c) => {
   });
 });
 
-app.use("/api/trpc/*", async (c) => {
+// GANTI BAGIAN INI YA BANG: Dari app.use MEnjadi app.all
+app.all("/api/trpc/*", async (c) => {
   return fetchRequestHandler({
     endpoint: "/api/trpc",
     req: c.req.raw,
