@@ -13,7 +13,17 @@ import { attendanceEvents } from "./sse";
 const app = new Hono<{ Bindings: HttpBindings }>();
 
 // 1. Amankan CORS paling pertama
-app.use("/*", cors()); 
+// 1. Amankan CORS paling pertama
+app.use(
+  "/*",
+  cors({
+    origin: "https://life-absensi-gamma.vercel.app",
+    credentials: true,
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    exposeHeaders: ["Content-Length"],
+  })
+);
 app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
 
 // 2. Rute tRPC dipasang menggunakan app.all() di posisi atas
