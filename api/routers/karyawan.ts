@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createRouter, publicQuery } from "../middleware";
 import { getDb } from "../queries/connection";
 import { karyawan } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
 
@@ -12,26 +12,20 @@ export const karyawanRouter = createRouter({
       nip: z.string(),
       namaLengkap: z.string(),
       divisi: z.string(),
-      images: z.array(z.string()), 
+      images: z.array(z.string()),
     }))
     .mutation(async ({ input }) => {
       const db = await getDb();
       const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
+      const joinDate = new Date().toISOString().split("T")[0];
 
-     // ── BYPASS INSTAN MENGGUNAKAN RAW SQL (ANTI-GAGAL) ──────────────────────
-      await db.execute(
-        `INSERT INTO karyawan_cloud (nip, nama_lengkap, divisi, user_id, employee_id, department, position, phone, join_date, face_photo) 
-         VALUES (?, ?, ?, 0, ?, ?, 'Karyawan', '-', ?, ?)`,
-        [
-          input.nip,
-          input.namaLengkap,
-          input.divisi,
-          input.nip,
-          input.divisi,
-          new Date().toISOString().split('T')[0],
-          targetPath
-        ]
-      );
+      // ── INSERT PAKAI DRIZZLE sql TEMPLATE (parameter ke-bind dengan benar) ──
+      await db.execute(sql`
+        INSERT INTO karyawan_cloud
+          (nip, nama_lengkap, divisi, user_id, employee_id, department, position, phone, join_date, face_photo)
+        VALUES
+          (${input.nip}, ${input.namaLengkap}, ${input.divisi}, 0, ${input.nip}, ${input.divisi}, 'Karyawan', '-', ${joinDate}, ${targetPath})
+      `);
 
       // ── LOGIKA PENYIMPANAN FOTO ────────────────────────────────────
       if (input.images && input.images.length > 0) {
@@ -59,12 +53,12 @@ export const karyawanRouter = createRouter({
     }))
     .mutation(async ({ input }) => {
       const db = await getDb();
-      
+
       await db.update(karyawan)
         .set({
           namaLengkap: input.namaLengkap,
           divisi: input.divisi,
-          department: input.divisi
+          department: input.divisi,
         })
         .where(eq(karyawan.nip, input.nip))
         .execute();
@@ -81,7 +75,7 @@ export const karyawanRouter = createRouter({
         nama: item.namaLengkap,
         nip: item.nip,
         divisi: item.divisi,
-        facePhoto: item.facePhoto
+        facePhoto: item.facePhoto,
       }));
     }),
 
