@@ -14,13 +14,14 @@ const app = new Hono<{ Bindings: HttpBindings }>();
 
 // 1. Amankan CORS paling pertama
 // 1. Amankan CORS paling pertama
+// 1. Amankan CORS paling pertama
 app.use(
   "/*",
   cors({
     origin: "https://life-absensi-gamma.vercel.app",
     credentials: true,
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Requested-With", "x-local-auth-token"], // <-- TAMBAHKAN INI DI SINI YA BANG!
     exposeHeaders: ["Content-Length"],
   })
 );
