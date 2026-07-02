@@ -18,12 +18,12 @@ export const karyawanRouter = createRouter({
       const db = await getDb();
       const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
       const joinDate = new Date().toISOString().split("T")[0];
-// ── AMANKAN QUERY DENGAN MEMASUKKAN SELURUH KOLOM TABEL SECARA UTUH ──────────────────────
+/// ── HAPUS KOLOM ID DAN NILAI NULL AGAR AUTO-INCREMENT DATABASE JALAN ALAMI ──────────────────────
       await db.execute(
         `INSERT INTO karyawan_cloud 
-         (id, nip, nama_lengkap, divisi, user_id, employee_id, department, position, phone, join_date, face_photo) 
+         (nip, nama_lengkap, divisi, user_id, employee_id, department, position, phone, join_date, face_photo) 
          VALUES 
-         (NULL, '${input.nip}', '${input.namaLengkap}', '${input.divisi}', 0, '${input.nip}', '${input.divisi}', 'Karyawan', '-', '${new Date().toISOString().split('T')[0]}', '${targetPath}')`
+         ('${input.nip}', '${input.namaLengkap}', '${input.divisi}', 0, '${input.nip}', '${input.divisi}', 'Karyawan', '-', '${new Date().toISOString().split('T')[0]}', '${targetPath}')`
       );
 
       // ── LOGIKA PENYIMPANAN FOTO ────────────────────────────────────
