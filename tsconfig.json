@@ -1,6 +1,20 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" }
-  ]
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@/*": ["./app/*"],
+      "@db/*": ["./app/db/*"],           // UBAH INI (tambahkan app/)
+      "@contracts/*": ["./app/contracts/*"] // UBAH INI (tambahkan app/)
+    }
+  },
+  "include": ["app/**/*"],              // Cukup panggil app/**/* karena semua ada di dalam app
+  "exclude": ["node_modules", "dist"]
 }
