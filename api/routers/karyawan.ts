@@ -7,7 +7,47 @@ import fs from "fs";
 import path from "path";
 
 export const karyawanRouter = createRouter({
- 
+  // Fungsi add (tambahkan logika ini kembali agar fitur registrasi scan jalan)
+  add: publicQuery
+    .input(z.object({
+      nip: z.string(),
+      namaLengkap: z.string(),
+      divisi: z.string(),
+      images: z.array(z.string()),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
+      const joinDate = new Date().toISOString().split("T")[0];
+
+      if (input.images && input.images.length > 0) {
+        const dirPath = path.join(process.cwd(), "public", "uploads", "karyawan", input.nip);
+        if (!fs.existsSync(dirPath)) {
+          fs.mkdirSync(dirPath, { recursive: true });
+        }
+        input.images.forEach((base64Str, index) => {
+          const cleanBase64 = base64Str.replace(/^data:image\/\w+;base64,/, "");
+          const buffer = Buffer.from(cleanBase64, "base64");
+          const filePath = path.join(dirPath, `${index + 1}.jpg`);
+          fs.writeFileSync(filePath, buffer);
+        });
+      }
+
+      await db.insert(karyawan).values({
+        nip: input.nip,
+        namaLengkap: input.namaLengkap,
+        divisi: input.divisi,
+        userId: 0,
+        employeeId: input.nip,
+        department: input.divisi,
+        position: "Karyawan",
+        phone: "-",
+        joinDate: joinDate,
+        facePhoto: targetPath,
+      }).execute();
+
+      return { success: true, message: "Berhasil menyimpan karyawan dan foto" };
+    }),
 
   update: publicQuery
     .input(z.object({
@@ -18,9 +58,10 @@ export const karyawanRouter = createRouter({
     .mutation(async ({ input }) => {
       const db = await getDb();
 
+      // FIX: Menggunakan nama properti camelCase skema Drizzle (.namaLengkap)
       await db.update(karyawan)
         .set({
-          nama_lengkap: input.namaLengkap,
+          namaLengkap: input.namaLengkap, 
           divisi: input.divisi,
           department: input.divisi,
         })
@@ -36,11 +77,12 @@ export const karyawanRouter = createRouter({
       const db = await getDb();
       const data = await db.select().from(karyawan).execute();
 
+      // FIX: Drizzle secara otomatis memetakan nama kolom snake_case ke camelCase sesuai skema TypeScript!
       return data.map((item: any) => ({
-        nama: item.nama_lengkap || item.namaLengkap,
+        namaLengkap: item.namaLengkap, 
         nip: item.nip,
         divisi: item.divisi,
-        facePhoto: item.face_photo,
+        facePhoto: item.facePhoto,
       }));
     }),
 
