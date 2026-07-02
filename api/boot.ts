@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { serveStatic } from "@hono/node-server/serve-static"; // <-- Tambah import ini
+import { cors } from "hono/cors"; // <-- Import CORS bawaan Hono
 import { bodyLimit } from "hono/body-limit";
 import type { HttpBindings } from "@hono/node-server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
@@ -11,6 +11,9 @@ import { Paths } from "@contracts/constants";
 import { attendanceEvents } from "./sse";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
+
+// Membuka gerbang CORS agar Vercel bisa menembak API di Railway tanpa diblokir
+app.use("/*", cors()); 
 
 app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
 app.get(Paths.oauthCallback, createOAuthCallbackHandler());
