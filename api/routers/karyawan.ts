@@ -8,51 +8,39 @@ import path from "path";
 
 export const karyawanRouter = createRouter({
   add: publicQuery
-    .input(z.object({
-      nip: z.string(),
-      namaLengkap: z.string(),
-      divisi: z.string(),
-      images: z.array(z.string()),
-    }))
-    .mutation(async ({ input }) => {
-      const db = await getDb();
-      const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
-      const joinDate = new Date().toISOString().split("T")[0];
+  .input(z.object({
+    nip: z.string(),
+    namaLengkap: z.string(),
+    divisi: z.string(),
+    images: z.array(z.string()),
+  }))
+  .mutation(async ({ input }) => {
+    const db = await getDb();
+    const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
+    const joinDate = new Date().toISOString().split("T")[0];
 
-      // Simpan Foto
-      if (input.images?.length > 0) {
-        const dirPath = path.join(process.cwd(), "public", "uploads", "karyawan", input.nip);
-        if (!fs.existsSync(dirPath)) {
-          fs.mkdirSync(dirPath, { recursive: true });
-        }
+    // Simpan foto
+    if (input.images && input.images.length > 0) {
+      const dirPath = path.join(process.cwd(), "public", "uploads", "karyawan", input.nip);
+      if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 
-        input.images.forEach((base64Str, index) => {
-          const cleanBase64 = base64Str.replace(/^data:image\/\w+;base64,/, "");
-          const buffer = Buffer.from(cleanBase64, "base64");
-          fs.writeFileSync(path.join(dirPath, `${index + 1}.jpg`), buffer);
-        });
-      }
+      input.images.forEach((base64Str, index) => {
+        const clean = base64Str.replace(/^data:image\/\w+;base64,/, "");
+        fs.writeFileSync(path.join(dirPath, `${index + 1}.jpg`), Buffer.from(clean, "base64"));
+      });
+    }
 
-      // INSERT dengan Raw SQL (paling stabil)
-      await db.execute(sql`
-        INSERT INTO karyawan_cloud 
-          (nip, nama_lengkap, divisi, user_id, employee_id, department, position, phone, join_date, face_photo)
-        VALUES 
-          (${input.nip}, 
-           ${input.namaLengkap}, 
-           ${input.divisi}, 
-           0, 
-           ${input.nip}, 
-           ${input.divisi}, 
-           'Karyawan', 
-           '-', 
-           ${joinDate}, 
-           ${targetPath})
-      `);
+    // RAW QUERY PALING AMAN
+    await db.execute(`
+      INSERT INTO karyawan_cloud 
+        (nip, nama_lengkap, divisi, user_id, employee_id, department, position, phone, join_date, face_photo)
+      VALUES 
+        (?, ?, ?, 0, ?, ?, 'Karyawan', '-', ?, ?)
+    `, [input.nip, input.namaLengkap, input.divisi, input.nip, input.divisi, joinDate, targetPath]);
 
-      return { success: true, message: "Berhasil menyimpan karyawan dan foto" };
-    }),
-
+    return { success: true, message: "OK" };
+  }),
+  
   update: publicQuery
     .input(z.object({
       nip: z.string(),
