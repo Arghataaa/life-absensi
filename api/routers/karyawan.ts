@@ -18,14 +18,13 @@ export const karyawanRouter = createRouter({
       const db = await getDb();
       const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
       const joinDate = new Date().toISOString().split("T")[0];
-
-      // ── INSERT PAKAI DRIZZLE sql TEMPLATE (parameter ke-bind dengan benar) ──
-      await db.execute(sql`
-        INSERT INTO karyawan_cloud
-          (nip, nama_lengkap, divisi, user_id, employee_id, department, position, phone, join_date, face_photo)
-        VALUES
-          (${input.nip}, ${input.namaLengkap}, ${input.divisi}, 0, ${input.nip}, ${input.divisi}, 'Karyawan', '-', ${joinDate}, ${targetPath})
-      `);
+// ── SOLUSI SAPU JAGAT: TEMBAK DATA LANGSUNG TANPA PARAMETER ? ──────────────────────
+      await db.execute(
+        `INSERT INTO karyawan_cloud 
+         (nip, nama_lengkap, divisi, user_id, employee_id, department, position, phone, join_date, face_photo) 
+         VALUES 
+         ('${input.nip}', '${input.namaLengkap}', '${input.divisi}', 0, '${input.nip}', '${input.divisi}', 'Karyawan', '-', '${new Date().toISOString().split('T')[0]}', '${targetPath}')`
+      );
 
       // ── LOGIKA PENYIMPANAN FOTO ────────────────────────────────────
       if (input.images && input.images.length > 0) {
