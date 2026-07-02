@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createRouter, publicQuery } from "../middleware";
 import { getDb } from "../queries/connection";
 import { karyawan } from "@db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
 
@@ -19,12 +19,14 @@ export const karyawanRouter = createRouter({
       const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
       const joinDate = new Date().toISOString().split("T")[0];
 
-      // ── 1. LOGIKA PENYIMPANAN FOTO DIJALANKAN DULUAN ───────────────────
-      if (input.images && input.images.length > 0) {
+      // Simpan Foto
+      if (input.images?.length > 0) {
         const dirPath = path.join(process.cwd(), "public", "uploads", "karyawan", input.nip);
+        
         if (!fs.existsSync(dirPath)) {
           fs.mkdirSync(dirPath, { recursive: true });
         }
+
         input.images.forEach((base64Str, index) => {
           const cleanBase64 = base64Str.replace(/^data:image\/\w+;base64,/, "");
           const buffer = Buffer.from(cleanBase64, "base64");
@@ -33,25 +35,23 @@ export const karyawanRouter = createRouter({
         });
       }
 
-      // ── 2. EKSEKUSI QUERY DATABASE MENGGUNAKAN DRIZZLE AMAN ──────────────
-      // Kita pakai db.insert murni bawaan skema biar auto-increment ID-nya dikelola cloud secara alami
+      // Insert Database
       await db.insert(karyawan).values({
         nip: input.nip,
-        namaLengkap: input.namaLengkap,
+        nama_lengkap: input.namaLengkap,
         divisi: input.divisi,
-        userId: 0,
-        employeeId: input.nip,
+        user_id: 0,
+        employee_id: input.nip,
         department: input.divisi,
         position: "Karyawan",
         phone: "-",
-        joinDate: joinDate,
-        facePhoto: targetPath,
+        join_date: joinDate,
+        face_photo: targetPath,
       }).execute();
 
       return { success: true, message: "Berhasil menyimpan karyawan dan foto" };
     }),
 
-  // 🛠️ FUNGSI EDIT/UPDATE DATA TEKS KARYAWAN
   update: publicQuery
     .input(z.object({
       nip: z.string(),
@@ -63,7 +63,7 @@ export const karyawanRouter = createRouter({
 
       await db.update(karyawan)
         .set({
-          namaLengkap: input.namaLengkap,
+          nama_lengkap: input.namaLengkap,
           divisi: input.divisi,
           department: input.divisi,
         })
@@ -77,12 +77,13 @@ export const karyawanRouter = createRouter({
     .input(z.object({ search: z.string().optional() }).optional())
     .query(async () => {
       const db = await getDb();
-      const data = db.select().from(karyawan);
-      return (await data.execute()).map((item: any) => ({
-        nama: item.namaLengkap,
+      const data = await db.select().from(karyawan).execute();
+
+      return data.map((item: any) => ({
+        nama: item.nama_lengkap || item.namaLengkap,
         nip: item.nip,
         divisi: item.divisi,
-        facePhoto: item.facePhoto,
+        facePhoto: item.face_photo,
       }));
     }),
 
@@ -90,7 +91,10 @@ export const karyawanRouter = createRouter({
     .input(z.object({ nip: z.string() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
-      await db.delete(karyawan).where(eq(karyawan.nip, input.nip)).execute();
+
+      await db.delete(karyawan)
+        .where(eq(karyawan.nip, input.nip))
+        .execute();
 
       try {
         const dirPath = path.join(process.cwd(), "public", "uploads", "karyawan", input.nip);
@@ -98,7 +102,7 @@ export const karyawanRouter = createRouter({
           fs.rmSync(dirPath, { recursive: true, force: true });
         }
       } catch (e) {
-        console.error("Gagal menghapus folder foto lokal:", e);
+        console.error("Gagal menghapus folder foto:", e);
       }
 
       return { success: true, message: "Berhasil menghapus karyawan" };
