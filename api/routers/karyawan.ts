@@ -18,19 +18,20 @@ export const karyawanRouter = createRouter({
       const db = await getDb();
       const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
 
-      // ── PAS DATA PARAMETER (10 PARAMETER COCOK DENGAN SCHEMA CLOUD) ──────────────────────
-      await db.insert(karyawan).values({
-        nip: input.nip,
-        namaLengkap: input.namaLengkap,
-        divisi: input.divisi,
-        userId: 0,
-        employeeId: input.nip,               
-        department: input.divisi,            
-        position: "Karyawan",
-        phone: "-", 
-        joinDate: new Date().toISOString().split('T')[0], 
-        facePhoto: targetPath,
-      }).execute();
+     // ── BYPASS INSTAN MENGGUNAKAN RAW SQL (ANTI-GAGAL) ──────────────────────
+      await db.execute(
+        `INSERT INTO karyawan_cloud (nip, nama_lengkap, divisi, user_id, employee_id, department, position, phone, join_date, face_photo) 
+         VALUES (?, ?, ?, 0, ?, ?, 'Karyawan', '-', ?, ?)`,
+        [
+          input.nip,
+          input.namaLengkap,
+          input.divisi,
+          input.nip,
+          input.divisi,
+          new Date().toISOString().split('T')[0],
+          targetPath
+        ]
+      );
 
       // ── LOGIKA PENYIMPANAN FOTO ────────────────────────────────────
       if (input.images && input.images.length > 0) {
