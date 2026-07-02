@@ -7,50 +7,46 @@ import fs from "fs";
 import path from "path";
 
 export const karyawanRouter = createRouter({
-  add: publicQuery
-    .input(z.object({
-      nip: z.string(),
-      namaLengkap: z.string(),
-      divisi: z.string(),
-      images: z.array(z.string()),
-    }))
-    .mutation(async ({ input }) => {
-      const db = await getDb();
-      const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
-      const joinDate = new Date().toISOString().split("T")[0];
+ add: publicQuery
+  .input(z.object({
+    nip: z.string(),
+    namaLengkap: z.string(),
+    divisi: z.string(),
+    images: z.array(z.string()),
+  }))
+  .mutation(async ({ input }) => {
+    const db = await getDb();
+    const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
+    const joinDate = new Date().toISOString().split("T")[0];
 
-      // Simpan Foto
-      if (input.images?.length > 0) {
-        const dirPath = path.join(process.cwd(), "public", "uploads", "karyawan", input.nip);
-        
-        if (!fs.existsSync(dirPath)) {
-          fs.mkdirSync(dirPath, { recursive: true });
-        }
+    // Simpan foto
+    if (input.images?.length > 0) {
+      const dirPath = path.join(process.cwd(), "public", "uploads", "karyawan", input.nip);
+      if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 
-        input.images.forEach((base64Str, index) => {
-          const cleanBase64 = base64Str.replace(/^data:image\/\w+;base64,/, "");
-          const buffer = Buffer.from(cleanBase64, "base64");
-          const filePath = path.join(dirPath, `${index + 1}.jpg`);
-          fs.writeFileSync(filePath, buffer);
-        });
-      }
+      input.images.forEach((base64Str, index) => {
+        const clean = base64Str.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(clean, "base64");
+        fs.writeFileSync(path.join(dirPath, `${index + 1}.jpg`), buffer);
+      });
+    }
 
-      // Insert Database
-      await db.insert(karyawan).values({
-        nip: input.nip,
-        nama_lengkap: input.namaLengkap,
-        divisi: input.divisi,
-        user_id: 0,
-        employee_id: input.nip,
-        department: input.divisi,
-        position: "Karyawan",
-        phone: "-",
-        join_date: joinDate,
-        face_photo: targetPath,
-      }).execute();
+    // INSERT dengan explicit kolom
+    await db.insert(karyawan).values({
+      nip: input.nip,
+      nama_lengkap: input.namaLengkap,
+      divisi: input.divisi,
+      user_id: null,
+      employee_id: input.nip,
+      department: input.divisi,
+      position: "Karyawan",
+      phone: null,
+      join_date: joinDate,
+      face_photo: targetPath,
+    }).execute();
 
-      return { success: true, message: "Berhasil menyimpan karyawan dan foto" };
-    }),
+    return { success: true };
+  }),
 
   update: publicQuery
     .input(z.object({
