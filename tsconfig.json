@@ -3,6 +3,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "node",
+    "jsx": "react-jsx",                // <--- BARIS PENYELAMAT REACT
     "esModuleInterop": true,
     "strict": false,
     "skipLibCheck": true,
@@ -10,11 +11,11 @@
     "ignoreDeprecations": "6.0",
     "types": ["node", "vite/client"],
     "paths": {
-      "@/*": ["./app/*"],
-      "@db/*": ["./app/db/*"],           // UBAH INI (tambahkan app/)
-      "@contracts/*": ["./app/contracts/*"] // UBAH INI (tambahkan app/)
+      "@/*": ["./src/*"],
+      "@db/*": ["./db/*"],
+      "@contracts/*": ["./contracts/*"]
     }
   },
-  "include": ["app/**/*"],              // Cukup panggil app/**/* karena semua ada di dalam app
+  "include": ["src/**/*", "api/**/*", "db/**/*", "contracts/**/*"],
   "exclude": ["node_modules", "dist"]
 }
