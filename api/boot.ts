@@ -62,15 +62,20 @@ app.use("/api/trpc/*", async (c) => {
 
 app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 
-// Handle static files secara aman di production tanpa warning dari Vite
+// Handle static files secara aman di production tanpa bikin server crash
 if (env.isProduction && !process.env.VERCEL) {
-  // Jika folder dist/public ada di luar folder api (sejajar folder api)
-  app.use("/*", serveStatic({ root: "../dist/public" })); 
-  
-  // Catatan: Jika nanti web/gambar tidak muncul, abang tinggal ganti jalur root di atas
-  // menjadi: root: "./dist/public" atau menyesuaikan posisi aslinya.
-
   const { serve } = await import("@hono/node-server");
+  const fs = await import("fs");
+  const path = await import("path");
+
+  // Cek dulu folders nya ada atau tidak, biar tidak memicu 'Stopping Container'
+  const publicPath = path.resolve(process.cwd(), "../dist/public");
+  if (fs.existsSync(publicPath)) {
+    const { serveStatic } = await import("@hono/node-server/serve-static");
+    app.use("/*", serveStatic({ root: "../dist/public" }));
+  } else {
+    console.log("⚠️ Folder dist/public belum ada, mode API-only aktif.");
+  }
   
   const port = parseInt(process.env.PORT || "3000");
   serve({ fetch: app.fetch, port }, () => {
