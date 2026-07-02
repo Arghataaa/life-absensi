@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { serveStatic } from "@hono/node-server/serve-static"; // <-- Tambah import ini
 import { bodyLimit } from "hono/body-limit";
 import type { HttpBindings } from "@hono/node-server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
@@ -61,15 +62,20 @@ app.use("/api/trpc/*", async (c) => {
 
 app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 
-export default app;
-
+// Handle static files secara aman di production tanpa warning dari Vite
 if (env.isProduction && !process.env.VERCEL) {
-  const { serve } = await import("@hono/node-server");
-  const { serveStaticFiles } = await import("./lib/vite");
-  serveStaticFiles(app);
+  // Jika folder dist/public ada di luar folder api (sejajar folder api)
+  app.use("/*", serveStatic({ root: "../dist/public" })); 
+  
+  // Catatan: Jika nanti web/gambar tidak muncul, abang tinggal ganti jalur root di atas
+  // menjadi: root: "./dist/public" atau menyesuaikan posisi aslinya.
 
+  const { serve } = await import("@hono/node-server");
+  
   const port = parseInt(process.env.PORT || "3000");
   serve({ fetch: app.fetch, port }, () => {
     console.log(`Server running on http://localhost:${port}/`);
   });
 }
+
+export default app;
