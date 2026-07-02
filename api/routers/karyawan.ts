@@ -20,11 +20,15 @@ export const karyawanRouter = createRouter({
 
       // ── AMANKAN QUERY INSERT UNTUK MYSQL CLOUD ──────────────────────
      // ── AMANKAN QUERY INSERT DENGAN STRING VALID UNTUK MYSQL CLOUD ──────────────────────
+      // ── AMANKAN QUERY INSERT UNTUK MYSQL CLOUD ──────────────────────
+      // ── AMANKAN QUERY INSERT DENGAN STRING VALID UNTUK MYSQL CLOUD ──────────────────────
       await db.insert(karyawan).values({
+        id: Math.floor(Math.random() * 1000000), // 👈 TAMBAHKAN BARIS INI BANG!
         nip: input.nip,
         namaLengkap: input.namaLengkap,
         divisi: input.divisi,
         userId: 0,
+        // ... sisa kode di bawahnya tetap sama
         employeeId: input.nip,
         department: input.divisi,
         position: "Karyawan",

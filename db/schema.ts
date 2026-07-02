@@ -79,7 +79,7 @@ export const karyawan = mysqlTable("karyawan_cloud", {
 export const employees = karyawan; 
 
 export const presensi = mysqlTable("presensi_cloud", { 
-  id: int("id").primaryKey().autoincrement(), // 👈 Beri .primaryKey() tegas
+  id: int("id").autoincrement().primaryKey(), // 👈 autoincrement dulu baru primaryKey!
   userId: int("user_id"),
   nama: varchar("nama", { length: 255 }).notNull(),
   tanggal: varchar("tanggal", { length: 10 }).notNull(), 
