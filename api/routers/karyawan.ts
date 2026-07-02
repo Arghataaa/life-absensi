@@ -2,51 +2,56 @@ import { z } from "zod";
 import { createRouter, publicQuery } from "../middleware";
 import { getDb } from "../queries/connection";
 import { karyawan } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
 
 export const karyawanRouter = createRouter({
- add: publicQuery
-  .input(z.object({
-    nip: z.string(),
-    namaLengkap: z.string(),
-    divisi: z.string(),
-    images: z.array(z.string()),
-  }))
-  .mutation(async ({ input }) => {
-    const db = await getDb();
-    const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
-    const joinDate = new Date().toISOString().split("T")[0];
+  add: publicQuery
+    .input(z.object({
+      nip: z.string(),
+      namaLengkap: z.string(),
+      divisi: z.string(),
+      images: z.array(z.string()),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
+      const joinDate = new Date().toISOString().split("T")[0];
 
-    // Simpan foto
-    if (input.images?.length > 0) {
-      const dirPath = path.join(process.cwd(), "public", "uploads", "karyawan", input.nip);
-      if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+      // Simpan Foto
+      if (input.images?.length > 0) {
+        const dirPath = path.join(process.cwd(), "public", "uploads", "karyawan", input.nip);
+        if (!fs.existsSync(dirPath)) {
+          fs.mkdirSync(dirPath, { recursive: true });
+        }
 
-      input.images.forEach((base64Str, index) => {
-        const clean = base64Str.replace(/^data:image\/\w+;base64,/, "");
-        const buffer = Buffer.from(clean, "base64");
-        fs.writeFileSync(path.join(dirPath, `${index + 1}.jpg`), buffer);
-      });
-    }
+        input.images.forEach((base64Str, index) => {
+          const cleanBase64 = base64Str.replace(/^data:image\/\w+;base64,/, "");
+          const buffer = Buffer.from(cleanBase64, "base64");
+          fs.writeFileSync(path.join(dirPath, `${index + 1}.jpg`), buffer);
+        });
+      }
 
-    // INSERT dengan explicit kolom
-    await db.insert(karyawan).values({
-      nip: input.nip,
-      nama_lengkap: input.namaLengkap,
-      divisi: input.divisi,
-      user_id: null,
-      employee_id: input.nip,
-      department: input.divisi,
-      position: "Karyawan",
-      phone: null,
-      join_date: joinDate,
-      face_photo: targetPath,
-    }).execute();
+      // INSERT dengan Raw SQL (paling stabil)
+      await db.execute(sql`
+        INSERT INTO karyawan_cloud 
+          (nip, nama_lengkap, divisi, user_id, employee_id, department, position, phone, join_date, face_photo)
+        VALUES 
+          (${input.nip}, 
+           ${input.namaLengkap}, 
+           ${input.divisi}, 
+           0, 
+           ${input.nip}, 
+           ${input.divisi}, 
+           'Karyawan', 
+           '-', 
+           ${joinDate}, 
+           ${targetPath})
+      `);
 
-    return { success: true };
-  }),
+      return { success: true, message: "Berhasil menyimpan karyawan dan foto" };
+    }),
 
   update: publicQuery
     .input(z.object({

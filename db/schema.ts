@@ -1,10 +1,11 @@
 import { mysqlTable, varchar, text, timestamp, boolean, int } from "drizzle-orm/mysql-core";
 
 // ========================================================
-// 1. TABEL UTAMA BAWAAN TEMPLATE (DENGAN PRIMARY KEY TEGAS)
+// TABEL-TABEL
 // ========================================================
+
 export const users = mysqlTable("users", {
-  id: int("id").primaryKey().autoincrement(), // 👈 Tambahkan .primaryKey() dengan tegas
+  id: int("id").primaryKey().autoincrement(),
   username: varchar("username", { length: 255 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(),
   name: varchar("name", { length: 255 }).notNull().default(""), 
@@ -16,7 +17,7 @@ export const users = mysqlTable("users", {
 });
 
 export const activityLogs = mysqlTable("activity_logs", {
-  id: int("id").primaryKey().autoincrement(), // 👈 Wajib ada .primaryKey() biar lolos dari Aiven
+  id: int("id").primaryKey().autoincrement(),
   userId: int("user_id"),
   type: varchar("type", { length: 50 }),
   action: text("action").notNull(),
@@ -59,11 +60,9 @@ export const settings = mysqlTable("settings", {
   lateTolerance: int("late_tolerance").default(15),
 });
 
-// ========================================================
-// 2. TABEL KARYAWAN & PRESENSI (VERSI CLOUD VALID)
-// ========================================================
+// TABEL KARYAWAN
 export const karyawan = mysqlTable("karyawan_cloud", { 
-  id: int("id").primaryKey().autoincrement(), // 👈 Beri .primaryKey() tegas
+  id: int("id").primaryKey().autoincrement(),
   nip: varchar("nip", { length: 50 }), 
   namaLengkap: varchar("nama_lengkap", { length: 255 }).notNull(),
   divisi: varchar("divisi", { length: 100 }).notNull(),
@@ -76,10 +75,8 @@ export const karyawan = mysqlTable("karyawan_cloud", {
   facePhoto: text("face_photo"),
 });
 
-export const employees = karyawan; 
-
 export const presensi = mysqlTable("presensi_cloud", { 
-  id: int("id").autoincrement().primaryKey(), // 👈 autoincrement dulu baru primaryKey!
+  id: int("id").primaryKey().autoincrement(),
   userId: int("user_id"),
   nama: varchar("nama", { length: 255 }).notNull(),
   tanggal: varchar("tanggal", { length: 10 }).notNull(), 
@@ -92,4 +89,6 @@ export const presensi = mysqlTable("presensi_cloud", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+// Export tambahan biar tidak error
+export const employees = karyawan;
 export const attendance = presensi;
