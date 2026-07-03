@@ -34,13 +34,14 @@ export const attendanceRouter = createRouter({
         const db = await getDb();
         const sekarang = new Date();
         const tanggalStr = sekarang.toISOString().split('T')[0]; 
-        const jamStr = sekarang.toTimeString().split(' ')[0];    
+        const jamStr = sekarang.toTimeString().split(' ')[0];   
 
         // Cari nama lengkap karyawan terlebih dahulu berdasarkan ID database internal
         const dataKaryawan = await db.select()
           .from(karyawan)
           .where(eq(karyawan.id, input.employeeId))
-          .limit(1);
+          .limit(1)
+          .execute(); // 👈 Ditambahkan .execute() agar stabil
 
         if (dataKaryawan.length === 0) {
           throw new TRPCError({
@@ -59,9 +60,7 @@ export const attendanceRouter = createRouter({
           jamMasuk: jamStr,
           status: "H", 
           type: input.status || "Masuk", 
-          // Catatan: Jika ingin tracking deviceId di database, silakan buat kolom baru 
-          // bernama 'deviceId' di tabel presensi pada file schema.ts dulu ya bang!
-        });
+        }).execute();
 
         return {
           success: true,
@@ -80,20 +79,29 @@ export const attendanceRouter = createRouter({
   list: publicQuery.query(async () => {
     try {
       const db = await getDb();
-      return await db.select().from(presensi);
+      return await db.select().from(presensi).execute();
     } catch (error) {
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gagal mengambil data riwayat" });
     }
   }),
 
-  // Endpoint bawaan untuk front-end web browser (Hapus)
+  // Endpoint bawaan untuk front-end web browser (Hapus) - 🔥 SEKARANG SUDAH BISA MENGHAPUS DATA
   delete: publicQuery
     .input(z.object({ id: z.number() }))
-    .mutation(async () => {
+    .mutation(async ({ input }) => { // 👈 Ambil objek input untuk tahu ID mana yang mau dihapus
       try {
+        const db = await getDb();
+        // ── AKSI NYATA HAPUS DATA DARI DATABASE ──
+        await db.delete(presensi)
+          .where(eq(presensi.id, input.id))
+          .execute();
+
         return { success: true, message: "Data berhasil dihapus" };
-      } catch (error) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gagal menghapus data" });
+      } catch (error: any) {
+        throw new TRPCError({ 
+          code: "INTERNAL_SERVER_ERROR", 
+          message: "Gagal menghapus data: " + error.message 
+        });
       }
     }),
 });

@@ -6,7 +6,7 @@ import { deviceRouter } from "./routers/device";
 import { settingRouter } from "./routers/setting";
 import { activityRouter } from "./routers/activity";
 import { notificationRouter } from "./routers/notification";
-import { karyawanRouter } from "./routers/karyawan"; // 👈 1. Kita import router karyawan baru kita di sini
+import { karyawanRouter } from "./routers/karyawan"; 
 import { createRouter, publicQuery } from "./middleware";
 
 export const appRouter = createRouter({
@@ -14,12 +14,12 @@ export const appRouter = createRouter({
   auth: authRouter,
   localAuth: localAuthRouter,
   user: userRouter,
-  attendance: attendanceRouter,
+  attendance: attendanceRouter, // 👈 Router absensi aman terdaftar
   device: deviceRouter,
   setting: settingRouter,
   activity: activityRouter,
   notification: notificationRouter,
-  karyawan: karyawanRouter, // 👈 2. Kita buka gerbangnya di sini agar dibaca oleh website!
+  karyawan: karyawanRouter,     // 👈 Router karyawan aman terdaftar
 });
 
 export type AppRouter = typeof appRouter;
