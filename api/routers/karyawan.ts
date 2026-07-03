@@ -50,7 +50,6 @@ export const karyawanRouter = createRouter({
   joinDate: joinDate,
   facePhoto: targetPath,
 }).execute();
-
       return { success: true, message: "Berhasil menyimpan karyawan dan foto" };
     }),
     
