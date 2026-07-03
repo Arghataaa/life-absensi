@@ -20,6 +20,7 @@ export const karyawanRouter = createRouter({
       const targetPath = `/uploads/karyawan/${input.nip}/1.jpg`;
       const joinDate = new Date().toISOString().split("T")[0];
 
+      // ── 1. LOGIKA PENYIMPANAN FOTO DIJALANKAN DULUAN ───────────────────
       if (input.images && input.images.length > 0) {
         const dirPath = path.join(process.cwd(), "public", "uploads", "karyawan", input.nip);
         if (!fs.existsSync(dirPath)) {
@@ -33,7 +34,12 @@ export const karyawanRouter = createRouter({
         });
       }
 
+      // ── 2. BYPASS INSERT MANUAL ID MENGGUNAKAN TIMESTAMP BENTUK ANGKA ──
+      // Ini trik paling ampuh biar database Aiven gak muntah ngeliat kata 'default' lagi!
+      const generateUniqueId = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 1000);
+
       await db.insert(karyawan).values({
+        id: generateUniqueId, // Kita isi ID-nya pakai angka unik buatan sendiri bang!
         nip: input.nip,
         namaLengkap: input.namaLengkap,
         divisi: input.divisi,
@@ -48,7 +54,7 @@ export const karyawanRouter = createRouter({
 
       return { success: true, message: "Berhasil menyimpan karyawan dan foto" };
     }),
-
+    
   update: publicQuery
     .input(z.object({
       nip: z.string(),
