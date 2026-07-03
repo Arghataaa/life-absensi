@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",                // <--- BARIS PENYELAMAT REACT
+    "esModuleInterop": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@db/*": ["./db/*"],
+      "@contracts/*": ["./contracts/*"]
+    }
+  },
+  "include": ["src/**/*", "api/**/*", "db/**/*", "contracts/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
