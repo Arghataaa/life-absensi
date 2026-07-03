@@ -38,19 +38,20 @@ export const karyawanRouter = createRouter({
       // Ini trik paling ampuh biar database Aiven gak muntah ngeliat kata 'default' lagi!
       const generateUniqueId = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 1000);
 
-      await db.insert(karyawan).values({
-        id: generateUniqueId, // Kita isi ID-nya pakai angka unik buatan sendiri bang!
-        nip: input.nip,
-        namaLengkap: input.namaLengkap,
-        divisi: input.divisi,
-        userId: 0,
-        employeeId: input.nip,
-        department: input.divisi,
-        position: "Karyawan",
-        phone: "-",
-        joinDate: joinDate,
-        facePhoto: targetPath,
-      }).execute();
+     // ── FIX: HAPUS KOLOM ID DARI VALUES AGAR DATABASE MENGURUS AUTO_INCREMENT ──
+await db.insert(karyawan).values({
+  nip: input.nip,
+  namaLengkap: input.namaLengkap,
+  divisi: input.divisi,
+  userId: 0,
+  employeeId: input.nip,
+  department: input.divisi,
+  position: "Karyawan",
+  phone: "-",
+  joinDate: joinDate,
+  facePhoto: targetPath,
+  // id: ... (HAPUS BARIS ID INI!)
+}).execute();
 
       return { success: true, message: "Berhasil menyimpan karyawan dan foto" };
     }),
