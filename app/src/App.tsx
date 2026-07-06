@@ -3,8 +3,7 @@ import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import DashboardLayout from "./components/DashboardLayout";
-import Dashboard from "./pages/Dashboard";
-import AttendancePage from "./pages/AttendancePage";
+import Dashboard from "./pages/Dashboard";``
 import AttendanceHistory from "./pages/AttendanceHistory";
 import EmployeeManagement from "./pages/EmployeeManagement";
 import DeviceManagement from "./pages/DeviceManagement";
@@ -24,7 +23,6 @@ export default function App() {
       <Route element={<DashboardLayout />}>
         {/* Jalur internal dashboard */}
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/absensi" element={<AttendancePage />} />
         <Route path="/riwayat" element={<AttendanceHistory />} />
         <Route path="/karyawan" element={<EmployeeManagement />} />
         <Route path="/perangkat" element={<DeviceManagement />} />
